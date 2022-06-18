@@ -5,5 +5,5 @@ import "errors"
 const DEBUG = true
 
 var (
-	ErrOptionNotValid = errors.New("option is set to an invalid value")
+	ErrConfigNotValid = errors.New("config is set to an invalid value")
 )

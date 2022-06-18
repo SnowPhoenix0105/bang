@@ -6,11 +6,23 @@ import (
 	"unsafe"
 )
 
+func produceInterface(config *Config, origin interface{}) interface{} {
+	src := reflect.ValueOf(origin)
+	if isSimpleKind(src.Kind()) {
+		return origin
+	}
+
+	dst := reflect.New(src.Type()).Elem()
+	produce(config, dst, src)
+
+	return dst.Interface()
+}
+
 /*
 produce copy the src object to dst object deeply with their reflect-objects. Requires
 `dst.CanSet() && dst.Type() == src.Type() && dst.IsZero()`
 */
-func produce(option *Option, dst, src reflect.Value) {
+func produce(option *Config, dst, src reflect.Value) {
 	if DEBUG {
 		if !dst.CanSet() {
 			panic("dst is not settable")

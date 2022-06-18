@@ -1,29 +1,47 @@
 package deepcopy
 
-import "reflect"
+import (
+	"github.com/snowphoenix0105/bang/deepcopy/with"
+)
 
-var defaultOption Option = *NewDefaultOption()
+var defaultConfig Config = *NewZeroConfig()
 
-func SetDefaultOption(option *Option) {
-	defaultOption = *option
+func SetDefaultOption(option *Config) {
+	defaultConfig = *option
+}
+
+/*
+DefaultConfig returns the copy of default-config (witch can be changed by SetDefaultOption()).
+If you need a zero-value Config, use NewZeroConfig().
+*/
+func DefaultConfig() Config {
+	ret := defaultConfig
+	return ret
 }
 
 type DeepCopier struct {
-	option Option
+	config Config
 }
 
-func Of[T any](origin T) T {
-	return InterfaceOf(origin).(T)
+func (c *DeepCopier) InterfaceOf(origin interface{}, options ...with.DeepCopyOption) interface{} {
+	configCopy := c.config
+	configCopy.ApplyOptions(options)
+	return produceInterface(&configCopy, origin)
 }
 
-func InterfaceOf(origin interface{}) interface{} {
-	src := reflect.ValueOf(origin)
-	if isSimpleKind(src.Kind()) {
-		return origin
+func Of[T any](origin T, options ...with.DeepCopyOption) T {
+	return InterfaceOf(origin, options...).(T)
+}
+
+func InterfaceOf(origin interface{}, options ...with.DeepCopyOption) interface{} {
+	var config *Config
+	if len(options) == 0 {
+		config = &defaultConfig
+	} else {
+		defaultConfigCopy := defaultConfig
+		defaultConfigCopy.ApplyOptions(options)
+		config = &defaultConfigCopy
 	}
 
-	dst := reflect.New(src.Type()).Elem()
-	produce(&defaultOption, dst, src)
-
-	return dst.Interface()
+	return produceInterface(config, origin)
 }
