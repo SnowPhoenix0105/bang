@@ -13,30 +13,35 @@ func produceInterface(config *Config, origin interface{}) interface{} {
 	}
 
 	dst := reflect.New(src.Type()).Elem()
-	produce(config, dst, src)
+	produce(config, dst, src, true)
 
 	return dst.Interface()
 }
 
 /*
 produce copy the src object to dst object deeply with their reflect-objects. Requires
-`dst.CanSet() && dst.Type() == src.Type() && dst.IsZero()`
+`dst.CanSet() && dst.Type() == src.Type() && (!dstIsZero || dst.IsZero())`
 */
-func produce(option *Config, dst, src reflect.Value) {
+func produce(option *Config, dst, src reflect.Value, dstIsZero bool) {
 	if DEBUG {
 		if !dst.CanSet() {
 			panic("dst is not settable")
 		}
+
 		if dst.Type() != src.Type() {
 			panic(fmt.Sprintf("dst.Type[%s] != src.Type[%s]", dst.Type().Name(), src.Type().Name()))
 		}
-		if !dst.IsZero() {
+
+		if dstIsZero && !dst.IsZero() {
 			panic(fmt.Sprintf("dst=reflect.ValueOf(%#v) is not zero", dst.Interface()))
 		}
 	}
 
 	// deal with zero-value in advance.
 	if src.IsZero() {
+		if !dstIsZero {
+			dst.Set(reflect.Zero(src.Type()))
+		}
 		return
 	}
 
@@ -47,7 +52,7 @@ func produce(option *Config, dst, src reflect.Value) {
 
 	case reflect.Pointer:
 		ptr := reflect.New(src.Type().Elem())
-		produce(option, ptr.Elem(), src.Elem())
+		produce(option, ptr.Elem(), src.Elem(), true)
 
 		dst.Set(ptr)
 		return
@@ -61,7 +66,7 @@ func produce(option *Config, dst, src reflect.Value) {
 		length := src.Len()
 
 		for i := 0; i < length; i++ {
-			produce(option, dst.Index(i), src.Index(i))
+			produce(option, dst.Index(i), src.Index(i), dstIsZero)
 		}
 
 		return
@@ -71,7 +76,7 @@ func produce(option *Config, dst, src reflect.Value) {
 		newSlice := reflect.MakeSlice(src.Type(), length, src.Cap())
 
 		for i := 0; i < length; i++ {
-			produce(option, newSlice.Index(i), src.Index(i))
+			produce(option, newSlice.Index(i), src.Index(i), true)
 		}
 
 		dst.Set(newSlice)
@@ -81,15 +86,29 @@ func produce(option *Config, dst, src reflect.Value) {
 		typ := src.Type()
 		newMap := reflect.MakeMapWithSize(typ, src.Len())
 
-		// two settable reflect-object to store the copied key and value of each iteration.
-		kTmp := reflect.New(typ.Key()).Elem()
-		vTmp := reflect.New(typ.Elem()).Elem()
+		if option.MapStrategy == MapStrategyDeepCopyKey {
+			// two settable reflect-object to store the copied key and value of each iteration.
+			kTmp := reflect.New(typ.Key()).Elem()
+			vTmp := reflect.New(typ.Elem()).Elem()
+
+			iter := src.MapRange()
+			for iter.Next() {
+				produce(option, kTmp, iter.Key(), false)
+				produce(option, vTmp, iter.Value(), false)
+				newMap.SetMapIndex(kTmp, vTmp)
+			}
+
+			dst.Set(newMap)
+			return
+		}
+
+		// one settable reflect-object to store the copied value of each iteration.
+		tmp := reflect.New(typ.Elem()).Elem()
 
 		iter := src.MapRange()
 		for iter.Next() {
-			produce(option, kTmp, iter.Key())
-			produce(option, vTmp, iter.Value())
-			newMap.SetMapIndex(kTmp, vTmp)
+			produce(option, tmp, iter.Value(), false)
+			newMap.SetMapIndex(iter.Key(), tmp)
 		}
 
 		dst.Set(newMap)
@@ -107,14 +126,16 @@ func produce(option *Config, dst, src reflect.Value) {
 				continue
 			}
 
-			produce(option, dst.Field(i), srcField)
+			produce(option, dst.Field(i), srcField, false)
 		}
 
 		return
 
 	case reflect.Interface:
 		if option.InterfaceStrategy == InterfaceStrategySetNil {
-			// leave dst zero
+			if !dstIsZero {
+				dst.Set(reflect.Zero(src.Type()))
+			}
 			return
 		}
 
@@ -131,7 +152,7 @@ func produce(option *Config, dst, src reflect.Value) {
 
 		ptr := reflect.New(srcElem.Type())
 		ptrElem := ptr.Elem()
-		produce(option, ptrElem, srcElem)
+		produce(option, ptrElem, srcElem, true)
 
 		// when an interface{} binds to a pointer-type object, it stores the value of the object directly.
 		// when it binds to a non-pointer-type object, it stores the pointer to the object.
@@ -144,5 +165,7 @@ func produce(option *Config, dst, src reflect.Value) {
 
 		dstPtr := unsafe.Pointer(uintptr(dst.Addr().UnsafePointer()) + uintptrSize)
 		*(*uintptr)(dstPtr) = *(*uintptr)(srcPtr)
+
+		return
 	}
 }
