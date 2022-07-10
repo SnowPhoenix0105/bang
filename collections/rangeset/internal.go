@@ -184,9 +184,11 @@ requires:
 func (t *rangeBPTree) addNormalRangeToSubTree(root *branchNode, p *pair) {
 	if DEBUG {
 		if root.Begin() > p.beg {
-
+			// TODO
 		}
 	}
+
+	// TODO
 }
 
 /*
@@ -197,15 +199,15 @@ requires:
 	2. root.parent == nil or root.parent.Begin() == p.beg
 */
 func (t *rangeBPTree) addMinRangeToSubTree(root *branchNode, p *pair) {
-
+	// TODO
 }
 
 func (t *rangeBPTree) mergeLeaf(l *leafNode) {
-
+	// TODO
 }
 
 func (t *rangeBPTree) delNodeFromBranch(b *branchNode, index int) {
-
+	// TODO
 }
 
 /*
