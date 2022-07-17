@@ -27,7 +27,24 @@ func testFuncWrap() error {
 	return err
 }
 
+func TestSprintfStackTrace(t *testing.T) {
+	err := testFuncWrap()
+
+	t.Logf("\n%+v", err)
+}
+
+func logErrorInDifferentFlag(t *testing.T, err error) {
+	t.Logf("%%s ->\n%s", err)
+	t.Logf("%%v ->\n%v", err)
+	t.Logf("%%+v ->\n%+v", err)
+	t.Logf("%%#v ->\n%#v", err)
+}
+
 func TestFormatStackTrace(t *testing.T) {
 	err := testFuncWrap()
 	t.Log("\n" + FormatStackTrace(err))
+
+	t.Logf("\n%+v", err)
+
+	logErrorInDifferentFlag(t, err)
 }

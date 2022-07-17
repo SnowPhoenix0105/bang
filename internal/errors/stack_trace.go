@@ -8,17 +8,22 @@ import (
 )
 
 func FormatStackTrace(err error) string {
+	builder := strings.Builder{}
+
+	formatStackTrace(err, &builder)
+
+	return builder.String()
+}
+
+func formatStackTrace(err error, writer io.Writer) {
 	trace := stackTrace{}
 	trace.applyError(err)
 
-	builder := strings.Builder{}
+	trace.printMessage(writer)
 
-	builder.WriteByte('\n')
-	builder.WriteByte('\n')
+	writer.Write([]byte{'\n', '\n'})
 
-	trace.printStackFrames(&builder)
-
-	return builder.String()
+	trace.printStackFrames(writer)
 }
 
 type runtimeFrame struct {
@@ -215,7 +220,8 @@ func (p *stackTraceFramePrinter) doPrint() {
 		fmt.Fprintf(p.writer, "%s \n\t@ %s:%d\n", funcName(fn), file, line)
 
 		for _, msg := range frame.msgList {
-			fmt.Fprintf(p.writer, "\t> %s\n", strings.ReplaceAll(msg, "\n", "\n\t* "))
+			fmtMsg := strings.ReplaceAll(msg, "\n", "\n\t* ")
+			fmt.Fprintf(p.writer, "\t> %s\n", fmtMsg)
 		}
 	}
 }

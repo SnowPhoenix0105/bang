@@ -2,6 +2,7 @@ package errors
 
 import (
 	"fmt"
+	"io"
 )
 
 func Mark(skip int, err error, format string, args []any) error {
@@ -13,13 +14,19 @@ func Mark(skip int, err error, format string, args []any) error {
 	msg := formatMessage(format, args)
 
 	return &errorWithMark{
-		cause:              err,
-		runtimeStackPCList: pcList,
-		msg:                msg,
+		errorWithMarkData{
+			cause:              err,
+			runtimeStackPCList: pcList,
+			msg:                msg,
+		},
 	}
 }
 
 type errorWithMark struct {
+	errorWithMarkData
+}
+
+type errorWithMarkData struct {
 	cause              error
 	msg                string
 	runtimeStackPCList []uintptr
@@ -38,6 +45,21 @@ func (e *errorWithMark) String() string {
 }
 
 func (e *errorWithMark) Format(state fmt.State, verb rune) {
-	// TODO
+	switch verb {
+	case 'v':
+		if state.Flag('+') {
+			formatStackTrace(e, state)
+			return
+		}
 
+		if state.Flag('#') {
+			fmt.Fprintf(state, "&errors.errorWithMark{%#v}", e.errorWithMarkData)
+			return
+		}
+
+		io.WriteString(state, e.Error())
+
+	case 's':
+		io.WriteString(state, e.String())
+	}
 }
