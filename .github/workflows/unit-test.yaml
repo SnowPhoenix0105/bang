@@ -1,0 +1,39 @@
+name: Unit-Test
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - 'feat/**'
+      - 'fix/**'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  unit-test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      - name: Show Current Dir
+        run: pwd && chmod 777 logs && ls -al
+
+      - name: Tidy
+        run: go mod tidy
+
+      - name: Test
+        run: go test -v -cover ./...
+
+      # Because all packages has already been tested,
+      # this command should use the cached result directly.
+      - name: Show Cover
+        run: go test -cover ./...
