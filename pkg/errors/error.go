@@ -9,13 +9,13 @@ func FormatStackTrace(err error) string {
 }
 
 func WithStack(err error) error {
-	return inner.WithStack(2, err)
+	return inner.WithStack(1, err)
 }
 
-func Mark(err error, format string, args ...any) error {
-	return inner.Mark(2, err, format, args)
+func Markf(err error, format string, args ...any) error {
+	return inner.Markf(1, err, format, args)
 }
 
-func Wrap(err error, format string, args ...any) error {
-	return inner.Wrap(err, format, args)
+func Wrapf(err error, format string, args ...any) error {
+	return inner.Wrapf(1, err, format, args)
 }

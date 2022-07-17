@@ -2,10 +2,9 @@ package errors
 
 import (
 	"fmt"
-	"io"
 )
 
-func Mark(skip int, err error, format string, args []any) error {
+func Markf(skip int, err error, format string, args []any) error {
 	if err == nil {
 		return nil
 	}
@@ -45,21 +44,5 @@ func (e *errorWithMark) String() string {
 }
 
 func (e *errorWithMark) Format(state fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if state.Flag('+') {
-			formatStackTrace(e, state)
-			return
-		}
-
-		if state.Flag('#') {
-			fmt.Fprintf(state, "&errors.errorWithMark{%#v}", e.errorWithMarkData)
-			return
-		}
-
-		io.WriteString(state, e.Error())
-
-	case 's':
-		io.WriteString(state, e.String())
-	}
+	formatErrorWithFlag(e, state, verb)
 }

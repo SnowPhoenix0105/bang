@@ -1,3 +1,3 @@
 package errors
 
-const DEBUG = true
+const DEBUG = false

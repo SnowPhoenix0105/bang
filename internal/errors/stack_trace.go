@@ -21,7 +21,11 @@ func formatStackTrace(err error, writer io.Writer) {
 
 	trace.printMessage(writer)
 
-	writer.Write([]byte{'\n', '\n'})
+	if len(trace.runtimeStackFrameList) == 0 {
+		return
+	}
+
+	io.WriteString(writer, "\nTraceback:\n")
 
 	trace.printStackFrames(writer)
 }
@@ -57,7 +61,7 @@ func (p *stackTrace) applyError(err error) {
 	p.runtimeStackFrameList = collector.frameList
 	p.baseError = collector.baseError
 
-	if collector.stackTraceSpanHasExternalWrapper {
+	if collector.stackTraceSpanHasExternalWrapper || len(collector.frameList) == 0 {
 		p.errorMessageMode = stackTraceErrorMessageModeCompatible
 	} else {
 		p.errorMessageMode = stackTraceErrorMessageModeNormal

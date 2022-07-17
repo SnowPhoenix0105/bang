@@ -1,19 +1,16 @@
 package errors
 
 import (
-	std "errors"
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var testError = std.New("base error")
+func TestWrap(t *testing.T) {
+	assert.Nil(t, Wrapf(0, nil, "wrap with %d", []any{123}))
 
-func TestWithStack(t *testing.T) {
-	assert.Nil(t, WithStack(0, nil))
-
-	err := WithStack(0, testError)
+	err := Wrapf(0, testError, "wrap with %d%f%s", []any{123, 2.34, "tmp"})
 	assert.NotNil(t, err)
 
 	_, ok := err.(stackTraceSpanNode)

@@ -2,10 +2,9 @@ package errors
 
 import (
 	"fmt"
-	"io"
 )
 
-func Wrap(err error, format string, args []any) error {
+func Wrapf(skip int, err error, format string, args []any) error {
 	if err == nil {
 		return nil
 	}
@@ -13,18 +12,12 @@ func Wrap(err error, format string, args []any) error {
 	msg := formatMessage(format, args)
 
 	return &errorWithMessage{
-		errorWithMessageData{
-			cause: err,
-			msg:   msg,
-		},
+		cause: err,
+		msg:   msg,
 	}
 }
 
 type errorWithMessage struct {
-	errorWithMessageData
-}
-
-type errorWithMessageData struct {
 	cause error
 	msg   string
 }
@@ -42,21 +35,5 @@ func (e *errorWithMessage) String() string {
 }
 
 func (e *errorWithMessage) Format(state fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if state.Flag('+') {
-			formatStackTrace(e, state)
-			return
-		}
-
-		if state.Flag('#') {
-			fmt.Fprintf(state, "&errors.errorWithMessage{%#v}", e.errorWithMessageData)
-			return
-		}
-
-		io.WriteString(state, e.Error())
-
-	case 's':
-		io.WriteString(state, e.String())
-	}
+	formatErrorWithFlag(e, state, verb)
 }

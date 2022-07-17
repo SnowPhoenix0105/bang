@@ -2,6 +2,8 @@ package errors
 
 import (
 	"fmt"
+	"io"
+	"reflect"
 	"runtime"
 	"strings"
 )
@@ -10,6 +12,7 @@ const (
 	GetRuntimeStackPCListStartSize = 32
 
 	ErrorMessageSplitter = ": "
+	pkgName              = "errors"
 )
 
 func formatMessage(format string, args []any) string {
@@ -25,7 +28,7 @@ func getRuntimeStackPCList(skip int) []uintptr {
 	bufferSize := GetRuntimeStackPCListStartSize
 	for {
 		pcBuffer := make([]uintptr, bufferSize)
-		cnt := runtime.Callers(skip+1, pcBuffer)
+		cnt := runtime.Callers(skip+2, pcBuffer)
 		if cnt < bufferSize {
 			return pcBuffer[:cnt]
 		}
@@ -42,23 +45,31 @@ func Unwrap(err error) error {
 	return nil
 }
 
-func commonStackFrameCount(left, right []uintptr) int {
-	leftIndex := len(left) - 1
-	rightIndex := len(right) - 1
-
-	cnt := 0
-	for leftIndex >= 0 && rightIndex >= 0 && left[leftIndex] == right[rightIndex] {
-		cnt++
-		leftIndex--
-		rightIndex--
-	}
-
-	return cnt
-}
-
 func funcName(fn *runtime.Func) string {
 	name := fn.Name()
 	i := strings.LastIndexByte(name, '/')
 	name = name[i+1:]
 	return name
+}
+
+func formatErrorWithFlag(err internalError, state fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if state.Flag('+') {
+			formatStackTrace(err, state)
+			return
+		}
+
+		if state.Flag('#') {
+			// *errorWithXXX is a fmt.Formatter, but errorWithXXX (not ptr) isn't.
+			fmt.Fprintf(state, "&%#v", reflect.ValueOf(err).Elem().Interface())
+
+			return
+		}
+
+		io.WriteString(state, err.Error())
+
+	case 's':
+		io.WriteString(state, err.String())
+	}
 }
