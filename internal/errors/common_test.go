@@ -21,8 +21,8 @@ func TestUnwrap(t *testing.T) {
 	assert.Nil(t, Unwrap(testError))
 	assert.Equal(t, testError, Unwrap(fmt.Errorf("%w%s", testError, "123")))
 	assert.Equal(t, testError, Unwrap(WithStack(0, testError)))
-	assert.Equal(t, testError, Unwrap(Markf(0, testError, "msg", []any{123})))
-	assert.Equal(t, testError, Unwrap(Wrapf(0, testError, "msg", []any{123})))
+	assert.Equal(t, testError, Unwrap(Mark(0, testError, "msg", []any{123})))
+	assert.Equal(t, testError, Unwrap(Wrap(0, testError, "msg", []any{123})))
 }
 
 func TestGetRuntimeStackPCList(t *testing.T) {

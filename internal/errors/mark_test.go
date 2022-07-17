@@ -8,9 +8,9 @@ import (
 )
 
 func TestMark(t *testing.T) {
-	assert.Nil(t, Markf(0, nil, "mark with %d", []any{123}))
+	assert.Nil(t, Mark(0, nil, "mark with %d", []any{123}))
 
-	err := Markf(0, testError, "mark with %d%s%f", []any{123, "123", 1.23})
+	err := Mark(0, testError, "mark with %d%s%f", []any{123, "123", 1.23})
 	assert.NotNil(t, err)
 
 	_, ok := err.(stackTraceSpanNode)

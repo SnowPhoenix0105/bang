@@ -8,9 +8,9 @@ import (
 )
 
 func TestWrap(t *testing.T) {
-	assert.Nil(t, Wrapf(0, nil, "wrap with %d", []any{123}))
+	assert.Nil(t, Wrap(0, nil, "wrap with %d", []any{123}))
 
-	err := Wrapf(0, testError, "wrap with %d%f%s", []any{123, 2.34, "tmp"})
+	err := Wrap(0, testError, "wrap with %d%f%s", []any{123, 2.34, "tmp"})
 	assert.NotNil(t, err)
 
 	_, ok := err.(stackTraceSpanNode)

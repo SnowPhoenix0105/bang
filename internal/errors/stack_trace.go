@@ -187,12 +187,6 @@ func (c *stackTraceCollector) setupFrameList(pcList []uintptr) {
 func (c *stackTraceCollector) collectSubFromStackTraceSpanNode(err stackTraceSpanNode) {
 	subError := err.Unwrap()
 
-	if DEBUG {
-		if subError == nil {
-			panic("subError is nil")
-		}
-	}
-
 	subIsInternalWrapper := c.collect(subError)
 	if !subIsInternalWrapper {
 		c.baseError = subError

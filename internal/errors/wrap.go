@@ -4,12 +4,12 @@ import (
 	"fmt"
 )
 
-func Wrapf(skip int, err error, format string, args []any) error {
+func Wrap(skip int, err error, format string, args []any) error {
 	if err == nil {
 		return nil
 	}
 
-	msg := formatMessage(format, args)
+	msg := formatMessage(skip+1, format, args)
 
 	return &errorWithMessage{
 		cause: err,

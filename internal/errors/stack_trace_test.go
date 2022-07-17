@@ -20,14 +20,14 @@ func testFuncStack() error {
 
 func testFuncMark() error {
 	err := testFuncStack()
-	err = Markf(0, err, "this is a marked multi-line message {\n\t\"test\": true\n}", []any{})
-	err = Markf(0, err, "this is a marked single-line message", []any{})
+	err = Mark(0, err, "this is a marked multi-line message {\n\t\"test\": true\n}", []any{})
+	err = Mark(0, err, "this is a marked single-line message", []any{})
 	return err
 }
 
 func testFuncWrap() error {
 	err := testFuncMark()
-	err = Wrapf(0, err, "this is a wrapped message", []any{})
+	err = Wrap(0, err, "this is a wrapped message", []any{})
 	return err
 }
 

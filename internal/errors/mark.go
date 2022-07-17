@@ -4,13 +4,13 @@ import (
 	"fmt"
 )
 
-func Markf(skip int, err error, format string, args []any) error {
+func Mark(skip int, err error, format string, args []any) error {
 	if err == nil {
 		return nil
 	}
 
 	pcList := getRuntimeStackPCList(skip + 1)
-	msg := formatMessage(format, args)
+	msg := formatMessage(skip+1, format, args)
 
 	return &errorWithMark{
 		errorWithMarkData{

@@ -12,10 +12,11 @@ const (
 	GetRuntimeStackPCListStartSize = 32
 
 	ErrorMessageSplitter = ": "
-	pkgName              = "errors"
+
+	pkgName = "errors"
 )
 
-func formatMessage(format string, args []any) string {
+func formatMessage(skip int, format string, args []any) string {
 	// TODO
 	return fmt.Sprintf(format, args...)
 }

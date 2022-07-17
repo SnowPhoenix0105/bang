@@ -12,10 +12,10 @@ func WithStack(err error) error {
 	return inner.WithStack(1, err)
 }
 
-func Markf(err error, format string, args ...any) error {
-	return inner.Markf(1, err, format, args)
+func Mark(err error, format string, args ...any) error {
+	return inner.Mark(1, err, format, args)
 }
 
-func Wrapf(err error, format string, args ...any) error {
-	return inner.Wrapf(1, err, format, args)
+func Wrap(err error, format string, args ...any) error {
+	return inner.Wrap(1, err, format, args)
 }
