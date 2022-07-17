@@ -1,4 +1,4 @@
-package errors
+package berrors
 
 import (
 	inner "github.com/snowphoenix0105/bang/internal/errors"
