@@ -24,9 +24,6 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Show Current Dir
-        run: pwd && chmod 777 logs && ls -al
-
       - name: Tidy
         run: go mod tidy
 
