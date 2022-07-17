@@ -17,7 +17,7 @@ func TestChanClose(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			write(i * 2)
 			write(i*2 + 1)
-			time.Sleep(1 * time.Second)
+			time.Sleep(1 * time.Millisecond)
 		}
 		close(ch1)
 		t.Log("close(ch1)")
@@ -32,7 +32,7 @@ func TestChanClose(t *testing.T) {
 				return
 			}
 			t.Logf("%d <- ch1", num)
-			time.Sleep(1 * time.Second)
+			time.Sleep(1 * time.Millisecond)
 		}
 	}()
 

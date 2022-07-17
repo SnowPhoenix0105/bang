@@ -1,43 +1,73 @@
 package errors
 
 import (
+	std "errors"
+	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestStackTracePrint(t *testing.T) {
-	collection := stackTrace{}
+func testFuncNewErrorf() error {
+	return fmt.Errorf("inner fmt.Errorf: %w", std.New("new error"))
+}
 
-	fn1 := func() {
-		pcList := getRuntimeStackPCList(1)
-		collection.runtimeStackFrameList = make([]runtimeFrame, len(pcList))
-		for i, pc := range pcList {
-			collection.runtimeStackFrameList[i].pc = pc
-		}
-	}
+func testFuncStack() error {
+	err := testFuncNewErrorf()
+	return WithStack(0, err)
+}
 
-	fn2 := func() {
-		fn1()
-	}
+func testFuncMark() error {
+	err := testFuncStack()
+	err = Mark(0, err, "this is a marked multi-line message {\n\t\"test\": true\n}", []any{})
+	err = Mark(0, err, "this is a marked single-line message", []any{})
+	return err
+}
 
-	fn3 := func() {
-		fn2()
-	}
+func testFuncWrap() error {
+	err := testFuncMark()
+	err = Wrap(0, err, "this is a wrapped message", []any{})
+	return err
+}
 
-	fn3()
+func testFuncStdErrorf() error {
+	err := testFuncWrap()
+	err = fmt.Errorf("fmt.Errorf error: %w", err)
+	return err
+}
 
-	collection.runtimeStackFrameList[0].msgList = []string{
-		"msg1",
-		"msg2",
-	}
+func TestStackTraceMode(t *testing.T) {
+	err := testFuncStdErrorf()
+	trace := stackTrace{}
+	trace.applyError(err)
 
-	buf := strings.Builder{}
-	printer := stackTraceFramePrinter{
-		stackTrace: &collection,
-		writer:     &buf,
-	}
+	assert.Equal(t, stackTraceErrorMessageModeCompatible, trace.errorMessageMode)
 
-	printer.doPrint()
+	err = testFuncWrap()
+	trace.applyError(err)
 
-	t.Logf("\n%s", buf.String())
+	assert.Equal(t, stackTraceErrorMessageModeNormal, trace.errorMessageMode)
+
+	err = testFuncNewErrorf()
+	trace.applyError(err)
+
+	assert.Equal(t, stackTraceErrorMessageModeCompatible, trace.errorMessageMode)
+}
+
+func TestFormatStackTrace(t *testing.T) {
+	err := testFuncStdErrorf()
+	msg := FormatStackTrace(err)
+	t.Log("testFuncStdErrorf->\n" + msg)
+	assert.True(t, strings.HasPrefix(msg, err.Error()))
+
+	err = testFuncWrap()
+	msg = FormatStackTrace(err)
+	t.Log("testFuncWrap->\n" + msg)
+	assert.False(t, strings.HasPrefix(msg, err.Error()))
+
+	err = testFuncNewErrorf()
+	msg = FormatStackTrace(err)
+	t.Log("testFuncNewErrorf->\n" + msg)
+	assert.Equal(t, err.Error(), msg)
 }

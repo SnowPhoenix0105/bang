@@ -2,7 +2,6 @@ package errors
 
 import (
 	"fmt"
-	"io"
 )
 
 func WithStack(skip int, err error) error {
@@ -13,18 +12,12 @@ func WithStack(skip int, err error) error {
 	pcList := getRuntimeStackPCList(skip + 1)
 
 	return &errorWithStack{
-		errorWithStackData{
-			runtimeStackPCList: pcList,
-			cause:              err,
-		},
+		runtimeStackPCList: pcList,
+		cause:              err,
 	}
 }
 
 type errorWithStack struct {
-	errorWithStackData
-}
-
-type errorWithStackData struct {
 	cause              error
 	runtimeStackPCList []uintptr
 }
@@ -42,21 +35,5 @@ func (e *errorWithStack) String() string {
 }
 
 func (e *errorWithStack) Format(state fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if state.Flag('+') {
-			formatStackTrace(e, state)
-			return
-		}
-
-		if state.Flag('#') {
-			fmt.Fprintf(state, "&errors.errorWithStack{%#v}", e.errorWithStackData)
-			return
-		}
-
-		io.WriteString(state, e.Error())
-
-	case 's':
-		io.WriteString(state, e.String())
-	}
+	formatErrorWithFlag(e, state, verb)
 }
