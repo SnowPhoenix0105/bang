@@ -1,7 +1,7 @@
 package deepcopy
 
 import (
-	"github.com/snowphoenix0105/bang/deepcopy/with"
+	"github.com/snowphoenix0105/bang/internal/deepcopy/with"
 )
 
 var defaultConfig Config = *NewZeroConfig()

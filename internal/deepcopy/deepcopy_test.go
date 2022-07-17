@@ -3,9 +3,8 @@ package deepcopy
 import (
 	"testing"
 
+	"github.com/snowphoenix0105/bang/pkg/ptr"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/snowphoenix0105/bang/ptr"
 )
 
 func TestDeepCopySimple(t *testing.T) {
