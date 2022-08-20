@@ -1,4 +1,4 @@
-package errorv2
+package errors
 
 func WithStack(skip int, err error) error {
 	return &stackError{
@@ -6,6 +6,7 @@ func WithStack(skip int, err error) error {
 		pcList: getRuntimeStackPCList(skip + 1),
 	}
 }
+
 func WithMessage(skip int, err error, format string, args []any) error {
 	return &messageError{
 		cause: err,
@@ -13,9 +14,7 @@ func WithMessage(skip int, err error, format string, args []any) error {
 	}
 }
 
-/*
-Wrap = WithMessage + WithStack
-*/
+// Wrap = WithMessage + WithStack, not recommend, use Mark instead
 func Wrap(skip int, err error, format string, args []any) error {
 	return &stackError{
 		cause: &messageError{

@@ -1,4 +1,4 @@
-package errorv2
+package errors
 
 import (
 	"fmt"
@@ -62,6 +62,7 @@ func (c *markedStackTraceCollector) buildTraceOf(err error) {
 
 	wrapErr, ok := err.(WrapError)
 	if !ok {
+		c.BaseError = err
 		return
 	}
 	c.buildTraceOf(wrapErr.Unwrap())

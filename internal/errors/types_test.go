@@ -1,4 +1,4 @@
-package errorv2
+package errors
 
 import "testing"
 

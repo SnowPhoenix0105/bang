@@ -1,7 +1,9 @@
-package errorv2
+package berrors
 
 import (
 	stderrors "errors"
+
+	inner "github.com/snowphoenix0105/bang/internal/errors"
 )
 
 func New(msg string) error {
@@ -23,8 +25,5 @@ func Cast[T any](err error) (T, bool) {
 }
 
 func Unwrap(err error) error {
-	if wrapper, ok := err.(WrapError); ok {
-		return wrapper.Unwrap()
-	}
-	return nil
+	return inner.Unwrap(err)
 }
