@@ -24,6 +24,10 @@ type FieldCheckError struct {
 	MismatchError error
 }
 
+func (e *FieldCheckError) Unwrap() error {
+	return e.MismatchError
+}
+
 func (e *FieldCheckError) Error() string {
 	return fmt.Sprintf("field %s cannot cast to %s because %s", e.In.String(), e.Out.String(), e.MismatchError.Error())
 }
@@ -84,8 +88,16 @@ func check(conf *Config, inPath, outPath *stack.StringStack, inType, outType ref
 		return nil
 
 	case reflect.Pointer:
-		inPath.Push("<ptrTo>")
-		outPath.Push("<ptrTo>")
+		inPath.Push("->")
+		outPath.Push("->")
+		ret := check(conf, inPath, outPath, inType.Elem(), outType.Elem())
+		inPath.Pop()
+		outPath.Pop()
+		return ret
+
+	case reflect.Slice, reflect.Array:
+		inPath.Push("[]")
+		outPath.Push("[]")
 		ret := check(conf, inPath, outPath, inType.Elem(), outType.Elem())
 		inPath.Pop()
 		outPath.Pop()

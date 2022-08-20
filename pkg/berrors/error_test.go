@@ -1,12 +1,12 @@
 package berrors
 
 import (
-	std "errors"
+	stderrors "errors"
 	"testing"
 )
 
 func testFuncNew() error {
-	return std.New("new error")
+	return stderrors.New("new error")
 }
 
 func testFuncStack() error {
@@ -42,7 +42,7 @@ func logErrorInDifferentFlag(t *testing.T, err error) {
 
 func TestFormatStackTrace(t *testing.T) {
 	err := testFuncWrap()
-	t.Log("\n" + FormatStackTrace(err))
+	t.Log("\n" + FormatErrorWithFullStackTrace(err))
 
 	t.Logf("\n%+v", err)
 

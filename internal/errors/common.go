@@ -2,8 +2,6 @@ package errors
 
 import (
 	"fmt"
-	"io"
-	"reflect"
 	"runtime"
 	"strings"
 )
@@ -22,7 +20,7 @@ func formatMessage(skip int, format string, args []any) string {
 }
 
 func generateErrorMessage(cause error, msg string) string {
-	return msg + ErrorMessageSplitter + cause.Error()
+	return strings.ReplaceAll(msg, "\n", " ") + ErrorMessageSplitter + cause.Error()
 }
 
 func getRuntimeStackPCList(skip int) []uintptr {
@@ -37,15 +35,6 @@ func getRuntimeStackPCList(skip int) []uintptr {
 	}
 }
 
-func Unwrap(err error) error {
-	if wrapper, ok := err.(ErrorWrapper); ok {
-		if subError := wrapper.Unwrap(); subError != nil {
-			return subError
-		}
-	}
-	return nil
-}
-
 func funcName(fn *runtime.Func) string {
 	name := fn.Name()
 	i := strings.LastIndexByte(name, '/')
@@ -53,24 +42,9 @@ func funcName(fn *runtime.Func) string {
 	return name
 }
 
-func formatErrorWithFlag(err internalError, state fmt.State, verb rune) {
-	switch verb {
-	case 'v':
-		if state.Flag('+') {
-			formatStackTrace(err, state)
-			return
-		}
-
-		if state.Flag('#') {
-			// *errorWithXXX is a fmt.Formatter, but errorWithXXX (not ptr) isn't.
-			fmt.Fprintf(state, "&%#v", reflect.ValueOf(err).Elem().Interface())
-
-			return
-		}
-
-		io.WriteString(state, err.Error())
-
-	case 's':
-		io.WriteString(state, err.String())
+func Unwrap(err error) error {
+	if wrapper, ok := err.(WrapError); ok {
+		return wrapper.Unwrap()
 	}
+	return nil
 }
