@@ -24,7 +24,7 @@ func New[InType any, OutType any](options ...Option) (Func[InType, OutType], err
 	cpyConfig := globalConfig
 
 	for _, opt := range options {
-		opt.apply(&cpyConfig)
+		opt.Apply(&cpyConfig)
 	}
 
 	fn, err := caster.New[InType, OutType](&cpyConfig)

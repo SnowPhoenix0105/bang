@@ -1,8 +1,11 @@
 package deepcopy
 
-import "reflect"
+import (
+	"reflect"
+	"unsafe"
+)
 
-var uintptrSize uintptr = reflect.TypeOf(uintptr(0)).Size()
+var uintptrSize uintptr = reflect.TypeOf(unsafe.Pointer(nil)).Size()
 
 func isSimpleKind(kind reflect.Kind) bool {
 	switch kind {

@@ -4,47 +4,63 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/snowphoenix0105/bang/internal/caster"
+	inner "github.com/snowphoenix0105/bang/internal/caster"
 )
 
 type Option interface {
-	apply(conf *caster.Config)
+	Apply(conf *inner.Config)
 }
 
-var (
-	OptionUseDefault Option = wrap(func(conf *caster.Config) {
-		*conf = *caster.NewDefaultConfig()
+type OptionInstance struct{}
+
+var Options OptionInstance
+
+func (o OptionInstance) UseDefault() Option {
+	return OptionFunc(func(conf *inner.Config) {
+		*conf = *inner.NewDefaultConfig()
 	})
-	OptionDeepCopy Option = wrap(func(conf *caster.Config) {
+}
+func (o OptionInstance) DeepCopy() Option {
+	return OptionFunc(func(conf *inner.Config) {
 		conf.CastFunc = deepCopyCastFunc
 	})
-	OptionIgnoreFieldName Option = wrap(func(conf *caster.Config) {
-		conf.FieldNameStrategy = caster.FieldNameStrategyIgnore
+}
+func (o OptionInstance) IgnoreFieldName() Option {
+	return OptionFunc(func(conf *inner.Config) {
+		conf.FieldNameStrategy = inner.FieldNameStrategyIgnore
 	})
-	OptionIgnoreFieldNameCase Option = wrap(func(conf *caster.Config) {
-		conf.FieldNameStrategy = caster.FieldNameStrategyIgnoreCase
+}
+func (o OptionInstance) IgnoreFieldNameCase() Option {
+	return OptionFunc(func(conf *inner.Config) {
+		conf.FieldNameStrategy = inner.FieldNameStrategyIgnoreCase
 	})
-	OptionEnablePtrToUintptr Option = wrap(func(conf *caster.Config) {
+}
+func (o OptionInstance) EnablePtrToUintptr() Option {
+	return OptionFunc(func(conf *inner.Config) {
 		conf.EnablePtrToUintptr = true
 	})
-	OptionEnablePtrToUnsafePtr Option = wrap(func(conf *caster.Config) {
+}
+func (o OptionInstance) EnablePtrToUnsafePtr() Option {
+	return OptionFunc(func(conf *inner.Config) {
 		conf.EnablePtrToUnsafePtr = true
 	})
-	OptionEnablePtrDecay Option = wrap(func(conf *caster.Config) {
+}
+func (o OptionInstance) EnablePtrDecay() Option {
+	return OptionFunc(func(conf *inner.Config) {
 		conf.EnablePtrToUintptr = true
 		conf.EnablePtrToUnsafePtr = true
 	})
-)
-
-type optionWrap struct {
-	fn func(conf *caster.Config)
 }
 
-func wrap(fn func(conf *caster.Config)) optionWrap {
-	return optionWrap{fn: fn}
+type OptionFuncWrapper struct {
+	fn func(conf *inner.Config)
 }
 
-func (w optionWrap) apply(conf *caster.Config) {
+func OptionFunc(fn func(conf *inner.Config)) OptionFuncWrapper {
+	return OptionFuncWrapper{fn: fn}
+}
+
+func (w OptionFuncWrapper) Apply(conf *inner.Config) {
 	w.fn(conf)
 }
 

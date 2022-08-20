@@ -145,6 +145,8 @@ func produce(option *Config, dst, src reflect.Value, dstIsZero bool) {
 			return
 		}
 
+		// FIXME
+
 		srcElem := src.Elem()
 		if srcElem.IsZero() {
 			return

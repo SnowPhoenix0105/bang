@@ -2,8 +2,6 @@ package deepcopy
 
 import (
 	"fmt"
-
-	"github.com/snowphoenix0105/bang/internal/deepcopy/with"
 )
 
 type Config struct {
@@ -11,28 +9,8 @@ type Config struct {
 	MapStrategy       MapStrategy
 }
 
-func NewZeroConfig() *Config {
+func NewDefaultConfig() *Config {
 	return &Config{}
-}
-
-func (c *Config) ApplyOptions(optionList []with.DeepCopyOption) {
-	for _, option := range optionList {
-		switch option {
-
-		case with.InterfaceBitwiseCopy:
-			c.InterfaceStrategy = InterfaceStrategyBitwiseCopy
-		case with.InterfaceSetNil:
-			c.InterfaceStrategy = InterfaceStrategySetNil
-		case with.InterfaceDeepCopyUnsafe:
-			c.InterfaceStrategy = InterfaceStrategyDeepCopyUnsafe
-
-		case with.MapBitwiseCopyKey:
-			c.MapStrategy = MapStrategyBitwiseCopyKey
-		case with.MapDeepCopyKey:
-			c.MapStrategy = MapStrategyDeepCopyKey
-
-		}
-	}
 }
 
 func (c *Config) CheckValid() error {

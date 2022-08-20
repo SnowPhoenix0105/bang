@@ -86,7 +86,7 @@ func TestDeepCopySimple(t *testing.T) {
 		},
 	}
 
-	cpy := Of(obj)
+	cpy := ProduceDeepCopyInterface(NewDefaultConfig(), obj)
 
 	// ensure they are equal
 	assert.Equal(t, obj, cpy)
