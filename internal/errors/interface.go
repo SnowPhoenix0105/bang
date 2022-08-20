@@ -1,22 +1,15 @@
 package errors
 
-import "fmt"
-
-type ErrorWrapper interface {
+type WrapError interface {
+	error
 	Unwrap() error
 }
-
-type Stringer interface {
-	String() string
+type StackError interface {
+	WrapError
+	StackTrace() StackTrace
 }
 
-type internalError interface {
-	error
-	Stringer
-	fmt.Formatter
-}
-
-type stackTraceSpanNode interface {
-	internalError
-	ErrorWrapper
+type MarkError interface {
+	StackError
+	Mark() string
 }
